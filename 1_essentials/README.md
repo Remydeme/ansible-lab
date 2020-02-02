@@ -51,11 +51,16 @@ vagrant ssh
 Vagrant.configure("2") do |config|
     # Configure web server machine
      config.vm.define "web" do |web1|
-         web1.vm.box = "bento/centos-7.7"
+         # configure a virtual machine that use ubuntu 
+         web1.vm.box = "bento/ubuntu-18.10"
+         # create 
          web1.vm.network "private_network", ip: "192.169.10.10"
      end
 end
 ```
+As you can see, config.vm.define takes a block with another variable. This variable, such as web above, is the exact same as the config variable, except any configuration of the inner variable applies only to the machine being defined. Therefore, any configuration on web will only affect the web machine.
+
+
 
 Restart vm
 
