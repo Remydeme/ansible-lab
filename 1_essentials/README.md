@@ -17,12 +17,12 @@ An HTTP server with Nginx to serve local HTML file
 
 ## Vagrant 
 
-### configure boxes
+### 1 - configure boxes
 
-Init Vagrant file with a box
+Create a Vagrantfile in your the current directory that conatins the basic configurations
  
 ```bash
-vagrant init hashicorp/bionic64
+vagrant init bento/ubuntu-18.10
 ```
 
 Nb: you can use another recommanded box provider "bento"
@@ -38,14 +38,16 @@ Run box
 vagrant up
 ```
 
-### Connect to your vm with SSH
+#### 1.1 Connect to your vm with SSH
 
+Test that your machine is up using ssh protocol.
+[ssh protocol]:(https://medium.com/@Magical_Mudit/understanding-ssh-workflow-66a0e8d4bf65)
 
 ```bash
 vagrant ssh
 ```
 
-### Static  IP
+### 3 - Set a static  IP for your machine 
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -53,22 +55,30 @@ Vagrant.configure("2") do |config|
      config.vm.define "web" do |web1|
          # configure a virtual machine that use ubuntu 
          web1.vm.box = "bento/ubuntu-18.10"
-         # create 
+        
+         # configure a private network ip for the machine
+         # Your machine will be accessible through this private static IP address that has been configured
+         # Your machine is not accessible from the global internet
          web1.vm.network "private_network", ip: "192.169.10.10"
      end
 end
 ```
-As you can see, config.vm.define takes a block with another variable. This variable, such as web above, is the exact same as the config variable, except any configuration of the inner variable applies only to the machine being defined. Therefore, any configuration on web will only affect the web machine.
+As you can see, config.vm.define takes a block with another variable. This variable, such as **web** above, is the exact same as the **config** variable, except any configuration of the inner variable applies only to the machine being defined. Therefore, any configuration on **web** will only affect the **web** machine.
 
 
 
-Restart vm
+**Restart vm**
+
+When you have modified your **Vagrantfile** you need to apply those change to your machine by using this command : 
 
 ```bash
 vagrant reload
 ```
 
+This command is usually required for changes made in the Vagrantfile to take effect. After making any modifications to the Vagrantfile, a reload should be called.
 or equivalent 
+
+* --provision - Force the provisioners to run.
 
 ```bash
 vagrant halt
