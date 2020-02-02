@@ -41,13 +41,14 @@ vagrant up
 #### 1.1 Connect to your vm with SSH
 
 Test that your machine is up using ssh protocol.
-[ssh protocol]:(https://medium.com/@Magical_Mudit/understanding-ssh-workflow-66a0e8d4bf65)
+
+[ssh protocol](https://medium.com/@Magical_Mudit/understanding-ssh-workflow-66a0e8d4bf65)
 
 ```bash
 vagrant ssh
 ```
 
-### 3 - Set a static  IP for your machine 
+### 2 - Set a static  IP for your machine 
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -67,7 +68,7 @@ As you can see, config.vm.define takes a block with another variable. This varia
 
 
 
-**Restart vm**
+#### 2-1 Restart vm
 
 When you have modified your **Vagrantfile** you need to apply those change to your machine by using this command : 
 
@@ -85,41 +86,62 @@ vagrant halt
 vagrant up
 ```
 
-Ping machine
+Note : 
+
+At this stage you have configured a virtual machine using **Vagrant**. This machine run with Ubuntu OS and we have configured a static private IP to communicate locally with it. 
+
+#### 2-2 Ping machine
+
+[Ping](https://en.wikipedia.org/wiki/Ping_(networking_utility) is a computer network administration software utility used to test the reachability of a host on an Internet Protocol (IP) network.
 
 ```bash
 ping -c 3 192.169.10.10
 ```
 
-### Provisoning With shell script
+**Note:** for more information about ping enter 
 
-Basic shell provisioning :
-
-Debian like
-
-```bash
-#!/bin/bash
-sudo apt-get update
-sudo apt-get install -y nginx
-mkdir -p /var/www/html/
-touch /var/www/html/index.html
- echo "Hello !" >> /var/www/html/index.html
+```
+man ping 
 ```
 
-Centos 
 
-```bash
-#!/bin/bash
-service httpd stop
-sudo yum update
-sudo yum install -y epel-release nginx 
-mkdir -p /var/www/html/
-touch /var/www/html/index.html
-echo "Hello !" >> /var/www/html/index.html
-sudo systemctl start nginx
+### 3- Provisoning With shell script
+
+
+Our goal is to configure an Nginx server allowing us to serve an HTML page. We will modify our
+Vagrantfile so that it uses a shell script that does this for us.
+
+
+#### 3-1 Update your Vagrantfile with provision
+
+
+**Provisioner**
+
+Provisioners in Vagrant allow you to automatically install software, alter configurations, and more on the machine as part of the vagrant up process.
+
+This is useful since boxes typically are not built perfectly for your use case. Of course, if you want to just use vagrant ssh and install the software by hand, that works. But by using the provisioning systems built-in to Vagrant, it automates the process so that it is repeatable. Most importantly, it requires no human interaction, so you can vagrant destroy and vagrant up and have a fully ready-to-go work environment with a single command. Powerful.
+
+Vagrant gives you multiple options for provisioning the machine, from simple shell scripts to more complex, industry-standard configuration management systems.
+
+
+[Shell Provision](https://www.vagrantup.com/docs/provisioning/shell.html)
+
+
+Add this line in the web config 
+
+```ruby
+web1.vm.provision :shell do |shell|
+    shell.path = "web.sh"
+end
 ```
 
-Example with ubuntu box
+- **path (string) - Path to a shell script to upload and execute. It can be a script relative to the project Vagrantfile or a remote script (like a gist).**
+
+
+
+**For Ubuntu OS**
+
+Your Vagrantfile should look like this now.
 
 ```ruby
 Vagrant.configure("2") do |config|
@@ -134,8 +156,43 @@ Vagrant.configure("2") do |config|
 end
 ```
 
-Restart vm 
-> provisioning is done once by default. We force it with arg --provision
+#### 3-2 Create script
+
+Create a file name web.sh in your current directory the same as Vagrantfile.
+
+*Note: Your web.sh file can be put somewhere else. Just update the path of your script file in the Vagrantfile*
+
+Shell code  :
+
+**For Debian OS** 
+
+web.sh : 
+
+```bash
+#!/bin/bash
+sudo apt-get update
+sudo apt-get install -y nginx
+mkdir -p /var/www/html/
+touch /var/www/html/index.html
+ echo "Hello !" >> /var/www/html/index.html
+```
+
+**For Centos OS** 
+
+web.sh :
+
+```bash
+#!/bin/bash
+service httpd stop
+sudo yum update
+sudo yum install -y epel-release nginx 
+mkdir -p /var/www/html/
+touch /var/www/html/index.html
+echo "Hello !" >> /var/www/html/index.html
+sudo systemctl start nginx
+```
+
+**Dont forget to restart your machine to apply new changes**
 
 ```bash
 vagrant reload --provision
