@@ -278,6 +278,10 @@ vagrant reload
 
 ## Ansible
 
+Ansible is a tool that - among other things - automates the installation, deployment and management of your servers. You are certainly using ssh to install the programs you need and configure your servers. Maybe you even created scripts to make it go faster. Ansible allows you to create "Playbooks", which are none other than Ansible-style scripts, and allow you to configure your servers.
+
+Its great strength is that it is agentless, in other words, nothing is to be placed on your servers. You install Ansible on your laptop for example, and voila. You can then launch the installation of your 40 database servers in a single command!
+
 
 Notes about using vagrant with ansible :
 
@@ -293,62 +297,56 @@ Notes about using vagrant with ansible :
 vagrant port
 ```
 
-### Ansible modules
+### Inventory 
 
-Use Ping module for all machine with all parameters specified
+[Inventory](https://docs.ansible.com/ansible/latest/user_guide/intro_inventory.html)
 
-```bash
-ansible all -i '192.168.33.10,' -m ping -u vagrant  --private-key=./.vagrant/machines/default/virtualbox/private_key 
+By default ansible communicate with the ssh protocol on the 22 port. 
+The inventory file contains all informations use by ansible to connect to the hosts :
+
+- path to ssh key 
+- host address 
+- configuration 
+
+Inventory is a file located in /etc/ansible/hosts
+
+**Format of the file**
+
+hosts:
+
+
+```python
+[hostName]
+192.169.10.10
+
+[hostName:vars]
+ansible_ssh_user=vagrant
+ansible_ssh_private_key_file='~/devops-project/./.vagrant/machines/default/virtualbox/private_key'
 ```
 
-> Nb: this method is not the "ansible way", you should use an inventory file
 
-> Nb: note the "," required with inline inventory
+You can now use ansible command to ping the server using :
 
-
-Define inventory file 'hosts' and add this line
-
-```bash
-192.168.33.10 ansible_ssh_user=vagrant ansible_ssh_private_key_file='.vagrant/machines/default/virtualbox/private_key'
+```ruby
+ansible hostName -m ping 
 ```
 
-Use ping module using inventory 
+You should get this output
 
-```bash
-ansible all -i hosts  -m ping 
+```json
+192.169.10.10 | SUCCESS => {
+    "ansible_facts": {
+        "discovered_interpreter_python": "/usr/bin/python3"
+    },
+    "changed": false,
+    "ping": "pong"
+}
 ```
 
-> Nb: we did not defined sections in our inventory file so we use 'all'
 
+### Define ansible playbook to install NGINX
 
-Use Setup module to get infos about vm 
-
-```bash
-ansible all -i hosts  -m setup
-```
-
-> Tips: use Sed and Jq to extract infos
-> ansible all -i hosts -m setup | sed '1c {'|jq 
-
-
-Use module apt to install Nginx
-
-```bash
-ansible all -i hosts -m apt -b -a "name=nginx state=latest"
-```
-
-> Nb : use '-b' argument to make vagrant user use sudo (required)
-
-> Nb : we use apt for debian, use yum package manager for centos
-
-Use module service to restart nginx
-
-```bash
-ansible all -i hosts -m service -b -a "name=nginx state=restarted"
-```
-
-### Define ansible playbook to install Nginx
-
+[Playbook](https://docs.ansible.com/ansible/latest/user_guide/playbooks_intro.html#basics)
 
 Define hosts 
 
@@ -401,31 +399,12 @@ Add task to ensure nginx is started
 
 ### Use Ansible playbook with Vagrant provider
 
-
-Use 'ansible_local' provisioning
-
-```ruby
-config.vm.provision "ansible_local" do |ans|
-    ans.playbook = "playbook.yml"
-    ans.install = true
-    ans.install_mode = "pip"
-end
-```
-
-> Nb: use playbook path on remote host ! (ex /home/vagrant/playbook.yml)
-
-Reload VM with new provision
-
-```bash
-vagrant provision
-```
-
 ### Use Ansible playbook in standalone
 
 Replace shell script to use ansible provision :
 
 ```bash
-ansible-playbook -i hosts playbook.yml
+ansible-playbook hostName playbook.yml
 ```
 
 > Nb: we do not define host 'all'
