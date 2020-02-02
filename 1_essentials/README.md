@@ -77,9 +77,11 @@ vagrant reload
 ```
 
 This command is usually required for changes made in the Vagrantfile to take effect. After making any modifications to the Vagrantfile, a reload should be called.
-or equivalent 
+
 
 * --provision - Force the provisioners to run.
+
+or equivalent 
 
 ```bash
 vagrant halt
@@ -92,13 +94,13 @@ At this stage you have configured a virtual machine using **Vagrant**. This mach
 
 #### 2-2 Ping machine
 
-[Ping](https://en.wikipedia.org/wiki/Ping_(networking_utility) is a computer network administration software utility used to test the reachability of a host on an Internet Protocol (IP) network.
+[Ping](https://en.wikipedia.org/wiki/Ping_networking_utility) is a computer network administration software utility used to test the reachability of a host on an Internet Protocol (IP) network.
 
 ```bash
 ping -c 3 192.169.10.10
 ```
 
-**Note:** for more information about ping enter 
+**Note:** for more information about ping enter in your terminal (Linux User): 
 
 ```
 man ping 
@@ -127,7 +129,7 @@ Vagrant gives you multiple options for provisioning the machine, from simple she
 [Shell Provision](https://www.vagrantup.com/docs/provisioning/shell.html)
 
 
-Add this line in the web config 
+Add this line in the web config loop to update to install NGINX on your web machine.
 
 ```ruby
 web1.vm.provision :shell do |shell|
@@ -199,22 +201,44 @@ vagrant reload --provision
 ```
 
 
-### Sync vm folder with local folder
+#### 4- Sync VM folder with local folder
 
 Add current directory to vm 
 
 ```ruby
-web1.vm.synced_folder ".", "/home/vagrant/files"s
+web1.vm.synced_folder ".", "/home/vagrant/files"
+```
+
+All the file that are in your current directory are going to be placed in the **/home/vagrant/files** directory. 
+You can place your file in an other directory it's up to you.
+
+
+**For Ubuntu OS**
+
+Your Vagrantfile should look like this now.
+
+```ruby
+Vagrant.configure("2") do |config|
+    # Configure web server machine
+     config.vm.define "web" do |web1|
+         web1.vm.box = "bento/ubuntu-18.10"
+         web1.vm.network "private_network", ip: "192.169.10.10"
+         web1.vm.synced_folder ".", "/home/vagrant/files"
+         web1.vm.provision :shell do |shell|
+             shell.path = "web.sh"
+         end
+     end
+end
 ```
 
 Reload vagrant 
 
 ```bash
-vagrant reload
+vagrant reload --provision
 ```
 
 
-### Define port forwarding
+#### 5- Define port forwarding
 
 Forwar host port 8000 to vm guest port 80
 
@@ -222,13 +246,37 @@ Forwar host port 8000 to vm guest port 80
 web.vm.network "forwarded_port", guest: 80, host: 8000
 ```
 
+**For Ubuntu OS**
+
+Your Vagrantfile should look like this now.
+
+```ruby
+Vagrant.configure("2") do |config|
+    # Configure web server machine
+     config.vm.define "web" do |web1|
+         web1.vm.box = "bento/ubuntu-18.10"
+         web1.vm.network "private_network", ip: "192.169.10.10"
+         web1.vm.synced_folder ".", "/home/vagrant/files"
+         web.vm.network "forwarded_port", guest: 80, host: 8000
+         web1.vm.provision :shell do |shell|
+             shell.path = "web.sh"
+         end
+     end
+end
+```
+
 Reload vagrant 
 
 ```bash
 vagrant reload
 ```
 
-## Ansible commands
+
+
+
+
+
+## Ansible
 
 
 Notes about using vagrant with ansible :
@@ -238,7 +286,8 @@ Notes about using vagrant with ansible :
 * ssh private key is located in '.vagrant/machines/<VM_NAME>/virtualbox/private_key' 
 * ssh port is 2222
   
-Tips to know ports 
+  
+**Tips to know ports** 
 
 ```bash
 vagrant port
