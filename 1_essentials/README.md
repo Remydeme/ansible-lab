@@ -76,7 +76,7 @@ When you have modified your **Vagrantfile** you need to apply those change to yo
 vagrant reload
 ```
 
-This command is usually required for changes made in the Vagrantfile to take effect. After making any modifications to the Vagrantfile, a reload should be called.
+**This command is usually required for changes made in the Vagrantfile to take effect. After making any modifications to the Vagrantfile, a reload should be called.**
 
 
 * --provision - Force the provisioners to run.
